@@ -1,88 +1,78 @@
--- Grow a Garden | Auto Farm Script - FarmDucHien Edition
--- UI: Rayfield | Icon: MineHex Network | Tác giả: Duchiendeptrai
+-- Grow a Garden | Auto Farm Script chính thức by duchiendepzai
+-- Yêu cầu: chạy trên PC với executor hỗ trợ Rayfield (KRNL, Synapse, Fluxus…)
 
 local Rayfield = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Rayfield/main/source.lua"))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "🌱 FarmDucHien | Grow a Garden",
-   LoadingTitle = "Đang khởi động script...",
-   LoadingSubtitle = "Farm & bán trái hoàn toàn tự động",
-   ConfigurationSaving = {
-      Enabled = true,
-      FolderName = "GrowFarmUI",
-      FileName = "FarmDucHien"
-   },
+   Name = "🌱 𝗙𝗮𝗿𝗺𝗗𝘂𝗰𝗛𝗶𝗲𝗻 | Grow a Garden",
+   LoadingTitle = "Đang tải giao diện...",
+   LoadingSubtitle = "Farm tự động bằng Rayfield UI",
+   ConfigurationSaving = { Enabled = true, FolderName = "GrowGardenFarm", FileName = "FarmDucHien" },
    IntroText = "FarmDucHien Script v2",
-   IntroIcon = "https://raw.githubusercontent.com/duchiendeptrai/FarmDucHien/main/minehex-icon.jpeg" -- Đảm bảo bạn đã upload ảnh này lên GitHub và link đúng
+   IntroIcon = "https://raw.githubusercontent.com/duchiendepzai/FarmDucHien/main/minehex-icon.jpeg"
 })
 
--- Biến chức năng
+-- Các biến điều khiển chức năng
 local autoPick, autoSell, autoBuy = false, false, false
-local delayFarm = 0.5
+local delayFarm = 0.4
 
--- Remote
+-- Game Services & Remotes
 local RS = game:GetService("ReplicatedStorage")
 local WS = game:GetService("Workspace")
 local pickRemote = RS:FindFirstChild("PickFruit")
 local sellRemote = RS:FindFirstChild("SellFruit")
 local buyRemote = RS:FindFirstChild("BuySeed")
 
--- Kiểm tra trái thường
+-- Hàm kiểm tra trái "thường" (không có child 'Effect')
 local function isNormalFruit(fruit)
     return fruit:IsA("Model") and not fruit:FindFirstChild("Effect")
 end
 
--- Tự động farm
+-- Luồng chính tự động farm
 task.spawn(function()
     while task.wait(delayFarm) do
         if autoPick then
             for _, fruit in ipairs(WS:GetDescendants()) do
                 if isNormalFruit(fruit) then
-                    pcall(function()
-                        pickRemote:FireServer(fruit)
-                    end)
+                    pcall(function() pickRemote:FireServer(fruit) end)
                 end
             end
         end
         if autoSell then
-            pcall(function()
-                sellRemote:FireServer()
-            end)
+            pcall(function() sellRemote:FireServer() end)
         end
         if autoBuy then
-            pcall(function()
-                buyRemote:FireServer("Rare")
-            end)
+            pcall(function() buyRemote:FireServer("Rare") end)
         end
     end
 end)
 
--- Giao diện chính - Farm
-local FarmTab = Window:CreateTab("🌾 Farm", "https://raw.githubusercontent.com/duchiendeptrai/FarmDucHien/main/minehex-icon.jpeg")
+-- Giao diện tab duy nhất "Farm"
+local FarmTab = Window:CreateTab("🌾 Farm", 4483362458)
 
 FarmTab:CreateToggle({
-   Name = "🌿 Tự động thu trái (không hiệu ứng)",
-   CurrentValue = false,
-   Callback = function(v) autoPick = v end
+    Name = "🌿 Auto thu trái (ko hiệu ứng)",
+    CurrentValue = false,
+    Callback = function(v) autoPick = v end
 })
 
 FarmTab:CreateToggle({
-   Name = "💰 Tự động bán trái",
-   CurrentValue = false,
-   Callback = function(v) autoSell = v end
+    Name = "💰 Auto bán trái",
+    CurrentValue = false,
+    Callback = function(v) autoSell = v end
 })
 
 FarmTab:CreateToggle({
-   Name = "🛒 Tự động mua trái Rare",
-   CurrentValue = false,
-   Callback = function(v) autoBuy = v end
+    Name = "🛒 Auto mua trái Rare",
+    CurrentValue = false,
+    Callback = function(v) autoBuy = v end
 })
 
 FarmTab:CreateSlider({
-   Name = "⚙️ Điều chỉnh tốc độ farm (giây)",
-   Range = {0.1, 1.5},
-   Increment = 0.1,
-   Suffix = "s",
-   CurrentValue = 0.4,
-   Callback = function(v) delayFarm = v end
+    Name = "⚙️ Tốc độ farm (giây)",
+    Range = {0.1, 1.5},
+    Increment = 0.1,
+    Suffix = " s",
+    CurrentValue = delayFarm,
+    Callback = function(v) delayFarm = v end
 })
